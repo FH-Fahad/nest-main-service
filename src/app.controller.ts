@@ -12,6 +12,7 @@ export class AppController {
 
   @Post()
   createUser(@Body() body) {
+    console.log('createUser', body);
     return this.appService.createUser(body);
   }
 }
