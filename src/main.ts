@@ -1,25 +1,26 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { AppConfig } from './configuration/app.config';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
-  ClientProxyFactory.create({
-    transport: Transport.RMQ,
-    options: {
-      urls: ['amqp://guest:guest@localhost:5672'], // RabbitMQ connection URL
-      queue: 'user_queue', // The same queue as the microservice
-      queueOptions: {
-        durable: true,
-      },
-    },
+  const app = await NestFactory.create(AppModule, {
+    cors: true,
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
 
-  // app.setGlobalPrefix('api');
-  const port = process.env.PORT ?? 3001;
-  await app.listen(port);
+  const config = new DocumentBuilder()
+    .setTitle('main service')
+    .setDescription('Main Service API description')
+    .addBearerAuth()
+    .build();
 
-  console.log(`Server started on http://localhost:${port}`);
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('xyz', app, documentFactory);
+
+  await app.listen(AppConfig.port);
+
+  console.log(`Server started port ${AppConfig.port} with ${AppConfig.env} environment`);
 }
+
 bootstrap();
