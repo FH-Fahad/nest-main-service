@@ -1,17 +1,9 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AppConfig } from './app.config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        MongooseModule.forRootAsync({
-            useFactory: () => ({
-                uri: AppConfig.mongoUri,
-            }),
-        }),
         ClientsModule.register([
             {
                 name: 'MAIN_SERVICE',
@@ -26,6 +18,6 @@ import { AppConfig } from './app.config';
             },
         ]),
     ],
-    exports: [MongooseModule, ClientsModule],
+    exports: [ClientsModule],
 })
-export class CommonModule { }
+export class RMQModule { }
