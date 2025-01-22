@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { DBModule } from './configuration/db.module';
 import { UserModule } from './modules/user/user.module';
-import { RMQModule } from './configuration/rmq.module';
+import { PGModule } from './configuration/pg.module';
 
 @Module({
   imports: [
-    DBModule,
-    RMQModule,
+    //DBModule,
+    //RMQModule,
+    PGModule,
     UserModule,
   ],
 })

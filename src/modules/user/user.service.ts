@@ -1,45 +1,25 @@
-import { Inject, Injectable, Req } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { firstValueFrom } from 'rxjs';
-import { User, UserDocument } from './entity/user.entity';
+import { Injectable } from '@nestjs/common';
 import { UserDto } from './dto/user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entity/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
     constructor(
-        @InjectModel(User.name)
-        private userModel: Model<UserDocument>,
-        @Inject('MAIN_SERVICE')
-        private readonly client: ClientProxy,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>
     ) { }
 
 
     async getUsers(): Promise<any> {
-        return await this.userModel.find().sort({ createdAt: -1 }).exec();
+        return await this.userRepository.find();
     }
+
 
     async createUser(body: UserDto): Promise<any> {
-        console.log('Sending message to RabbitMQ:', body);
+        const user = this.userRepository.create(body);
 
-        const result = await firstValueFrom(
-            this.client.send({ cmd: 'create_user' }, { ...body })
-        );
-
-        console.log('Response from microservice:', result);
-
-        const { email, password } = result;
-
-        const user = await this.userModel.create({ email, password });
-
-        return user;
+        return await this.userRepository.save(user);
     }
-    // async createUser(req): Promise<any> {
-    //     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    //     const os = req.headers['user-agent'];
-    //     console.log('IP:', ip, '\nOS:', os);
-
-    //     return { ip, os };
-    // }
 }
